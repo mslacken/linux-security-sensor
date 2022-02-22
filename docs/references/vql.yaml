@@ -4022,6 +4022,20 @@
     description: The Value to set
     required: true
   category: server
+- name: size_cmp
+  description: Queries the size for all files under a location with given operator
+  type: Function
+  - name: location
+    type: string
+    description: The location under which the files are located
+    required: true
+  - name: size
+    type: string
+    description: The lower size limit in bytes, kB, MB, GB, TB, PB
+   required: true
+  - name: operator
+    type: string
+    description: operator, can be gt, lt, ge, le, eq
 - name: sleep
   description: Sleep for the specified number of seconds. Always returns true.
   type: Function

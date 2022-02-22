@@ -1,0 +1,23 @@
+name: Linux.Detection.Size
+description: |
+   Returns all files with compared with the given operator in a given location
+
+# Can be CLIENT, CLIENT_EVENT, SERVER, SERVER_EVENT
+type: CLIENT
+
+parameters:
+   - name: Path
+     description: Path to scan for empty files
+     default: '/var/log'
+   - name: Size
+     description: Size of which the files must be greater or equal
+     default: "0"
+   - name: Operator
+     description: Operator to use , can be gt (greater), lt (lesser), ge (greater equal), le (less equal), eq(equals)
+
+sources:
+  - precondition:
+      SELECT OS From info() where OS = 'linux'
+
+    query: |
+     SELECT * from glob(globs=Path) WHERE size(file=FullPath)
