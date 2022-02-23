@@ -1,4 +1,4 @@
-name: Linux.Detection.Size
+name: Linux.Detection.SizeCmp
 description: |
    Returns all files with compared with the given operator in a given location
 

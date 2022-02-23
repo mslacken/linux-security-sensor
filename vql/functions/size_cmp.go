@@ -36,7 +36,7 @@ func sizeByte(strSize string) (int64, error) {
 	i := strings.IndexFunc(strSize, unicode.IsLetter)
 
 	if i == -1 {
-		return 0, errors.New("size must be a positive integer")
+		return 0, nil
 	}
 
 	bytesString, multiple := strSize[:i], strSize[i:]
@@ -65,30 +65,36 @@ func sizeByte(strSize string) (int64, error) {
 	}
 }
 
-type SizeArgs struct {
-	Path     string `vfilter:"required,field=file,default=/var/log,doc=The location to check recursivly for files"`
-	Size     string `vfilter:"field=size,default=100MB,doc=The size of which file is greater or equal than"`
-	Operator string `vfilter:"field=operator,default=eq,doc=Operator which should be used."`
+type SizeCmpArgs struct {
+	Path     string `vfilter:"required,field=path,default=/var/log,doc=The location to check recursivly for files"`
+	Size     string `vfilter:"field=size,doc=The size of which file is greater or equal than"`
+	Operator string `vfilter:"field=operator,doc=Operator which should be used."`
 }
 
-type SizeFunction struct{}
+type SizeCmpFunction struct{}
 
-func (self SizeFunction) Info(scope vfilter.Scope, type_map *vfilter.TypeMap) *vfilter.FunctionInfo {
+func (self SizeCmpFunction) Info(scope vfilter.Scope, type_map *vfilter.TypeMap) *vfilter.FunctionInfo {
 	return &vfilter.FunctionInfo{
-		Name:    "size_gt",
+		Name:    "size_cmp",
 		Doc:     "Queries for files greater than given size and given directory.",
-		ArgType: type_map.AddType(scope, &ChattrArgs{}),
+		ArgType: type_map.AddType(scope, &SizeCmpArgs{}),
 	}
 }
 
-type Size []string
+type SizeCmp string
 
-func (self SizeFunction) Call(ctx context.Context, scope vfilter.Scope, args *ordereddict.Dict) vfilter.Any {
-	var myArgs SizeArgs
+func (self SizeCmpFunction) Call(ctx context.Context, scope vfilter.Scope, args *ordereddict.Dict) vfilter.Any {
+	myArgs := &SizeCmpArgs{}
 	err := arg_parser.ExtractArgsWithContext(ctx, scope, args, myArgs)
 	if err != nil {
-		scope.Log("size_cmp: %s", err.Error())
+		scope.Log("size_cmp(%s,%s,%s): %s", myArgs.Path, myArgs.Size, myArgs.Operator, err.Error())
 		return nil
+	}
+	if myArgs.Operator == "" {
+		myArgs.Operator = "eq"
+	}
+	if myArgs.Size == "" {
+		myArgs.Size = "0"
 	}
 	// check for validity of operator
 	opValid := false
@@ -159,9 +165,9 @@ func (self SizeFunction) Call(ctx context.Context, scope vfilter.Scope, args *or
 		}
 		return nil
 	})
-	return fileList
+	return "foo"
 }
 
 func init() {
-	vql_subsystem.RegisterFunction(&SizeFunction{})
+	vql_subsystem.RegisterFunction(&SizeCmpFunction{})
 }
